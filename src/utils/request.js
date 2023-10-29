@@ -4,7 +4,7 @@ import { Toast } from 'vant'
 // 好处:不会污染原始的axios实例
 const instance = axios.create({
   baseURL: 'http://cba.itlike.com/public/index.php?s=/api/',
-  timeout: 50000
+  timeout: 5000
 })
 
 // 自定义配置
@@ -35,7 +35,10 @@ instance.interceptors.response.use(
       Toast(res.message)
       // 抛出一个错误的promise
       return Promise.reject(res.message)
+    } else {
+      Toast.clear()
     }
+    return res
   },
   function (error) {
     // 超出 2xx 范围的状态码都会触发该函数。
