@@ -13,6 +13,15 @@ const instance = axios.create({
 instance.interceptors.request.use(
   function (config) {
     // 在发送请求之前做些什么
+
+    // 开启loading,禁止背景点击(节流处理,防止多次无效触发)
+    Toast.loading({
+      message: '加载中...',
+      forbidClick: true, // 禁止背景点击
+      loadingType: 'spinner', // 配置loading图标
+      duration: 0 // 不会自动消失
+    })
+
     return config
   },
   function (error) {
@@ -32,13 +41,16 @@ instance.interceptors.response.use(
       // 给提示
       // Tip:不可以使用this.$toast--当前的js文件不是vue组件的环境
       // 抛出一个错误的promise
+      // 给错误提示, Toast 默认是单例模式，后面的 Toast调用了，会将前一个 Toast 效果覆盖
+      // 同时只能存在一个 Toast
       Toast(res.message)
       // 抛出一个错误的promise
       return Promise.reject(res.message)
     } else {
+      // 正确情况，直接走业务核心逻辑，清除loading效果
       Toast.clear()
     }
-    return res
+    return res// 必须有返回值
   },
   function (error) {
     // 超出 2xx 范围的状态码都会触发该函数。
