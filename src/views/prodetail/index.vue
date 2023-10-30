@@ -1,6 +1,11 @@
 <template>
   <div class="prodetail">
-    <van-nav-bar fixed title="商品详情页" left-arrow @click-left="$router.go(-1)" />
+    <van-nav-bar
+      fixed
+      title="商品详情页"
+      left-arrow
+      @click-left="$router.go(-1)"
+    />
 
     <van-swipe :autoplay="3000" @change="onChange">
       <van-swipe-item v-for="(image, index) in images" :key="index">
@@ -8,7 +13,9 @@
       </van-swipe-item>
 
       <template #indicator>
-        <div class="custom-indicator">{{ current + 1 }} / {{ images.length }}</div>
+        <div class="custom-indicator">
+          {{ current + 1 }} / {{ images.length }}
+        </div>
       </template>
     </van-swipe>
 
@@ -22,7 +29,7 @@
         <div class="sellcount">已售{{ detail.goods_sales }}件</div>
       </div>
       <div class="msg text-ellipsis-2">
-       {{ detail.goods_name }}
+        {{ detail.goods_name }}
       </div>
 
       <div class="service">
@@ -40,29 +47,37 @@
     <div class="comment">
       <div class="comment-title">
         <div class="left">商品评价 {{ total }}条</div>
-        <div class="right">查看更多 <van-icon name="arrow" /> </div>
+        <div class="right">查看更多 <van-icon name="arrow" /></div>
       </div>
       <div class="comment-list">
-        <div class="comment-item" v-for="item in commentList" :key="item.comment_id">
+        <div
+          class="comment-item"
+          v-for="item in commentList"
+          :key="item.comment_id"
+        >
           <div class="top">
-            <img :src="item.user.avatar_url||defaultImg" alt="">
+            <img :src="item.user.avatar_url || defaultImg" alt="" />
             <div class="name">{{ item.user.nick_name }}</div>
-            <van-rate :size="16" :value="3" color="#ffd21e" void-icon="star" void-color="#eee"/>
+            <van-rate
+              :size="16"
+              :value="3"
+              color="#ffd21e"
+              void-icon="star"
+              void-color="#eee"
+            />
           </div>
           <div class="content">
-         {{item.content}}
+            {{ item.content }}
           </div>
           <div class="time">
-            {{item.create_time}}
+            {{ item.create_time }}
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 商品描述 -->
-    <div class="desc" v-html="detail.content">
-
-    </div>
+    <!-- 商品描述 -->x
+    <div class="desc" v-html="detail.content"></div>
 
     <!-- 底部 -->
     <div class="footer">
@@ -74,9 +89,40 @@
         <van-icon name="shopping-cart-o" />
         <span>购物车</span>
       </div>
-      <div class="btn-add">加入购物车</div>
-      <div class="btn-buy">立刻购买</div>
+      <div @click="addFn" class="btn-add">加入购物车</div>
+      <div @click="buyFn" class="btn-buy">立即购买</div>
     </div>
+
+    <!-- 加入购物车的弹层 -->
+    <van-action-sheet v-model="showPannel" :title="mode === 'cart' ? '加入购物车' : '立刻购买'">
+  <div class="product">
+    <div class="product-title">
+      <div class="left">
+        <img :src="detail.goods_image" alt="">
+      </div>
+      <div class="right">
+        <div class="price">
+          <span>¥</span>
+          <span class="nowprice">{{ detail.goods_price_min }}</span>
+        </div>
+        <div class="count">
+          <span>库存</span>
+          <span>{{detail.stock_total}}</span>
+        </div>
+      </div>
+    </div>
+    <div class="num-box">
+      <span>数量</span>
+      数字框占位
+    </div>
+    <!-- 有库存才显示提交按钮 -->
+    <div class="showbtn" v-if="detail.stock_total>0">
+      <div class="btn" v-if="mode==='cart'">加入购物车</div>
+      <div class="btn now" v-else>立刻购买</div>
+    </div>
+    <div class="btn-none" v-else>该商品已抢完</div>
+  </div>
+</van-action-sheet>
   </div>
 </template>
 
@@ -92,7 +138,9 @@ export default {
       detail: {},
       total: 0, // 评价总数
       commentList: [], // 评价列表
-      defaultImg
+      defaultImg,
+      showPannel: false, // 控制弹层的显示隐藏
+      mode: 'cart' // 标记弹层状态
     }
   },
   computed: {
@@ -109,18 +157,29 @@ export default {
       this.current = index
     },
     async getDetail () {
-      const { data: { detail } } = await getProDetail(this.goodsid)
+      const {
+        data: { detail }
+      } = await getProDetail(this.goodsid)
       this.detail = detail
       this.images = detail.goods_image
       console.log(this.images)
     },
     async getComments () {
-      const { data: { list, total } } = await getProComments(this.goodsid, 3)
+      const {
+        data: { list, total }
+      } = await getProComments(this.goodsid, 3)
       this.commentList = list
       this.total = total
       console.log(this.images)
+    },
+    addFn () {
+      this.mode = 'cart'
+      this.showPannel = true
+    },
+    buyFn () {
+      this.mode = 'buyNow'
+      this.showPannel = true
     }
-
   }
 }
 </script>
@@ -149,7 +208,7 @@ export default {
     overflow: scroll;
     ::v-deep img {
       display: block;
-      width: 100%!important;
+      width: 100% !important;
     }
   }
   .info {
@@ -241,7 +300,8 @@ export default {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    .icon-home, .icon-cart {
+    .icon-home,
+    .icon-cart {
       display: flex;
       flex-direction: column;
       align-items: center;
