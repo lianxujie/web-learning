@@ -76,61 +76,71 @@
       </div>
     </div>
 
-    <!-- 商品描述 -->x
+    <!-- 商品描述 -->
     <div class="desc" v-html="detail.content"></div>
 
     <!-- 底部 -->
     <div class="footer">
-      <div class="icon-home">
+      <div @click="$router.push('/')" class="icon-home">
         <van-icon name="wap-home-o" />
         <span>首页</span>
       </div>
-      <div class="icon-cart">
+      <div @click="$router.push('/cart')" class="icon-cart">
+        <span v-if="cartTotal > 0" class="num">{{ cartTotal }}</span>
         <van-icon name="shopping-cart-o" />
         <span>购物车</span>
       </div>
       <div @click="addFn" class="btn-add">加入购物车</div>
-      <div @click="buyFn" class="btn-buy">立即购买</div>
+      <div @click="buyNow" class="btn-buy">立刻购买</div>
     </div>
 
     <!-- 加入购物车的弹层 -->
-    <van-action-sheet v-model="showPannel" :title="mode === 'cart' ? '加入购物车' : '立刻购买'">
-  <div class="product">
-    <div class="product-title">
-      <div class="left">
-        <img :src="detail.goods_image" alt="">
-      </div>
-      <div class="right">
-        <div class="price">
-          <span>¥</span>
-          <span class="nowprice">{{ detail.goods_price_min }}</span>
+    <van-action-sheet
+    :actions="actions"
+      v-model="showPannel"
+      :title="mode === 'cart' ? '加入购物车' : '立刻购买'"
+    >
+      <div class="product">
+        <div class="product-title">
+          <div class="left">
+            <img :src="detail.goods_image" alt="" />
+          </div>
+          <div class="right">
+            <div class="price">
+              <span>¥</span>
+              <span class="nowprice">{{ detail.goods_price_min }}</span>
+            </div>
+            <div class="count">
+              <span>库存</span>
+              <span>{{ detail.stock_total }}</span>
+            </div>
+          </div>
         </div>
-        <div class="count">
-          <span>库存</span>
-          <span>{{detail.stock_total}}</span>
+        <div class="num-box">
+          <span>数量</span>
+          <!-- v-model本质上 :value和...的简写 -->
+          <CountBox v-model="addCount"></CountBox>
         </div>
+        <!-- 有库存才显示提交按钮 -->
+        <div class="showbtn" v-if="detail.stock_total > 0">
+          <div class="btn" v-if="mode === 'cart'">加入购物车</div>
+          <div class="btn now" v-else>立刻购买</div>
+        </div>
+        <div class="btn-none" v-else>该商品已抢完</div>
       </div>
-    </div>
-    <div class="num-box">
-      <span>数量</span>
-      数字框占位
-    </div>
-    <!-- 有库存才显示提交按钮 -->
-    <div class="showbtn" v-if="detail.stock_total>0">
-      <div class="btn" v-if="mode==='cart'">加入购物车</div>
-      <div class="btn now" v-else>立刻购买</div>
-    </div>
-    <div class="btn-none" v-else>该商品已抢完</div>
-  </div>
-</van-action-sheet>
+    </van-action-sheet>
   </div>
 </template>
 
 <script>
 import { getProComments, getProDetail } from '@/api/product'
 import defaultImg from '@/assets/default-avatar.png'
+import CountBox from '@/components/CountBox.vue'
 export default {
   name: 'ProDetail',
+  components: {
+    CountBox
+  },
   data () {
     return {
       images: [],
@@ -140,7 +150,9 @@ export default {
       commentList: [], // 评价列表
       defaultImg,
       showPannel: false, // 控制弹层的显示隐藏
-      mode: 'cart' // 标记弹层状态
+      mode: 'cart', // 标记弹层状态
+      addCount: 1, // 数字框绑定的数据
+      cartTotal: 0 // 购物车角标
     }
   },
   computed: {
@@ -159,7 +171,7 @@ export default {
     async getDetail () {
       const {
         data: { detail }
-      } = await getProDetail(this.goodsid)
+      } = await getProDetail(this.goodsId)
       this.detail = detail
       this.images = detail.goods_image
       console.log(this.images)
@@ -167,7 +179,7 @@ export default {
     async getComments () {
       const {
         data: { list, total }
-      } = await getProComments(this.goodsid, 3)
+      } = await getProComments(this.goodsId, 3)
       this.commentList = list
       this.total = total
       console.log(this.images)
@@ -176,7 +188,7 @@ export default {
       this.mode = 'cart'
       this.showPannel = true
     },
-    buyFn () {
+    buyNow () {
       this.mode = 'buyNow'
       this.showPannel = true
     }
@@ -322,13 +334,75 @@ export default {
       color: #fff;
       font-size: 14px;
     }
-    .btn-buy {
-      background-color: #fe5630;
-    }
   }
 }
 
 .tips {
   padding: 10px;
+}
+// 弹层的样式
+.product {
+  .product-title {
+    display: flex;
+    .left {
+      img {
+        width: 90px;
+        height: 90px;
+      }
+      margin: 10px;
+    }
+    .right {
+      flex: 1;
+      padding: 10px;
+      .price {
+        font-size: 14px;
+        color: #fe560a;
+        .nowprice {
+          font-size: 24px;
+          margin: 0 5px;
+        }
+      }
+    }
+  }
+
+  .num-box {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    align-items: center;
+  }
+
+  .btn, .btn-none {
+    height: 40px;
+    line-height: 40px;
+    margin: 20px;
+    border-radius: 20px;
+    text-align: center;
+    color: rgb(255, 255, 255);
+    background-color: rgb(255, 148, 2);
+  }
+  .btn.now {
+    background-color: #fe5630;
+  }
+  .btn-none {
+    background-color: #cccccc;
+  }
+}
+
+.footer .icon-cart {
+  position: relative;
+  padding: 0 6px;
+  .num {
+    z-index: 999;
+    position: absolute;
+    top: -2px;
+    right: 0;
+    min-width: 16px;
+    padding: 0 4px;
+    color: #fff;
+    text-align: center;
+    background-color: #ee0a24;
+    border-radius: 50%;
+  }
 }
 </style>
