@@ -70,8 +70,8 @@ export default {
       data: { pageData }
     } = await getHomeData()
     this.bannerList = pageData.items[1].data
-    // this.navList = pageData.items[3].data
-    // this.proList = pageData.items[6].data
+    this.navList = pageData.items[3].data
+    this.proList = pageData.items[6].data
   }
 }
 </script>

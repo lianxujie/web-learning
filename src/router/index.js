@@ -28,8 +28,8 @@ const router = new VueRouter({
       redirect: '/home',
       children: [
         { path: '/home', component: Home },
-        { path: '/category', component: Cart },
-        { path: '/cart', component: Category },
+        { path: '/category', component: Category },
+        { path: '/cart', component: Cart },
         { path: '/user', component: user }
       ]
     },
