@@ -15,39 +15,44 @@
     <!-- 轮播图 -->
     <van-swipe class="my-swipe" :autoplay="3000" indicator-color="white">
       <van-swipe-item v-for="item in bannerList" :key="item.imgUrl">
-      <img :src="item.imgUrl" alt="">s
+        <img :src="item.imgUrl" alt="" />
       </van-swipe-item>
     </van-swipe>
 
     <!-- 导航 -->
     <van-grid column-num="5" icon-size="40">
       <van-grid-item
-        v-for="item in navlist" :key="item.imgUrl"
+        v-for="item in navList"
+        :key="item.imgUrl"
         :icon="item.imgUrl"
-        text="新品首发"
+        :text="item.text"
         @click="$router.push('/category')"
       />
     </van-grid>
 
     <!-- 主会场 -->
     <div class="main">
-      <img src="@/assets/main.png" alt="">
+      <img src="@/assets/main.png" alt="" />
     </div>
 
     <!-- 猜你喜欢 -->
     <div class="guess">
       <p class="guess-title">—— 猜你喜欢 ——</p>
+
       <div class="goods-list">
-        <GoodsItem v-for="item in proList" :key="item.goods_id"
-        :item="item"></GoodsItem>
+        <GoodsItem
+          v-for="item in proList"
+          :item="item"
+          :key="item.goods_id"
+        ></GoodsItem>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { getHomeData } from '@/api/home'
 import GoodsItem from '@/components/GoodsItem.vue'
+import { getHomeData } from '@/api/home'
 export default {
   name: 'HomePage',
   components: {
@@ -61,10 +66,12 @@ export default {
     }
   },
   async created () {
-    const { data: { pageData } } = await getHomeData()
+    const {
+      data: { pageData }
+    } = await getHomeData()
     this.bannerList = pageData.items[1].data
-    this.navlist = pageData.items[3].data
-    this.proList = pageData.items[6].data
+    // this.navList = pageData.items[3].data
+    // this.proList = pageData.items[6].data
   }
 }
 </script>
@@ -95,16 +102,16 @@ export default {
 
 // 分类导航部分
 .my-swipe .van-swipe-item {
-  height: 185px;
-  color: #fff;
-  font-size: 20px;
-  text-align: center;
-  background-color: #39a9ed;
-}
-.my-swipe .van-swipe-item img {
-  width: 100%;
-  height: 185px;
-}
+    color: #fff;
+    font-size: 20px;
+    line-height: 150px;
+    text-align: center;
+    background-color: #39a9ed;
+  }
+// .my-swipe .van-swipe-item img {
+//   width: 100%;
+//   height: 185px;
+// }
 
 // 主会场
 .main img {

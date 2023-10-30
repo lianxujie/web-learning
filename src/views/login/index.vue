@@ -1,11 +1,7 @@
 <template>
   <div class="login">
     <!-- 头部 NavBar -->
-    <van-nav-bar
-      title="会员登录"
-      left-arrow
-      @click-left="$router.go(-1)"
-    ></van-nav-bar>
+    <van-nav-bar title="会员登录" left-arrow @click-left="$router.go(-1)" />
     <!-- 主体 -->
     <div class="container">
       <div class="title">
