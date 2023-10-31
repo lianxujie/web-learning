@@ -96,7 +96,6 @@
 
     <!-- 加入购物车的弹层 -->
     <van-action-sheet
-    :actions="actions"
       v-model="showPannel"
       :title="mode === 'cart' ? '加入购物车' : '立刻购买'"
     >
@@ -123,7 +122,7 @@
         </div>
         <!-- 有库存才显示提交按钮 -->
         <div class="showbtn" v-if="detail.stock_total > 0">
-          <div class="btn" v-if="mode === 'cart'">加入购物车</div>
+          <div class="btn" v-if="mode === 'cart'" @click="addCart">加入购物车</div>
           <div class="btn now" v-else>立刻购买</div>
         </div>
         <div class="btn-none" v-else>该商品已抢完</div>
@@ -191,6 +190,42 @@ export default {
     buyNow () {
       this.mode = 'buyNow'
       this.showPannel = true
+    },
+    // addCart () {
+    //   if (!this.$store.getters.token) {
+    //     console.log('弹确认框')
+    //     return
+    //   }
+    //   console.log('骑过去')
+    // }
+    addCart () {
+      // 1.判断token是否存在,如果token不存在，弹消息对象
+      // 2.如果token存在，继续请求操作
+      if (!this.$store.getters.token) {
+        // 弹确认框
+        console.log('bu正常请求')
+        this.$dialog.confirm({
+          title: '温馨提示',
+          message: '此时需要先登录才能继续操作哦',
+          confirmButtonText: '去登录',
+          cancelButtonText: '再逛逛'
+
+        }).then(() => {
+          // 如果希望跳转到登录，并且登录后能回跳回来,
+          // 需要在跳转的时候携带参数(当前的路径地址)
+          // this.$router.push('/login'
+          this.$router.replace(
+            {
+              path: '/login',
+              query: {
+                backUrl: this.$route.fullPath
+              }
+            }
+          )
+        }).catch(() => { })
+        return
+      }
+      console.log('正常请求')
     }
   }
 }

@@ -1,6 +1,6 @@
 import Vue from 'vue'
 // 按需引入
-import { Toast, Button, Rate, Tabbar, TabbarItem, NavBar, Search, Swipe, SwipeItem, Grid, GridItem, Icon, ActionSheet } from 'vant'
+import { Toast, Button, Rate, Tabbar, TabbarItem, NavBar, Search, Swipe, SwipeItem, Grid, GridItem, Icon, ActionSheet, Dialog } from 'vant'
 
 Vue.use(Tabbar)
 Vue.use(TabbarItem)
@@ -15,3 +15,4 @@ Vue.use(Grid)
 Vue.use(GridItem)
 Vue.use(Icon)
 Vue.use(ActionSheet)
+Vue.use(Dialog)
