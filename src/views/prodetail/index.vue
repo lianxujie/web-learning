@@ -135,6 +135,7 @@
 import { getProComments, getProDetail } from '@/api/product'
 import defaultImg from '@/assets/default-avatar.png'
 import CountBox from '@/components/CountBox.vue'
+import { addCart } from '@/api/cart'
 export default {
   name: 'ProDetail',
   components: {
@@ -198,7 +199,7 @@ export default {
     //   }
     //   console.log('骑过去')
     // }
-    addCart () {
+    async addCart () {
       // 1.判断token是否存在,如果token不存在，弹消息对象
       // 2.如果token存在，继续请求操作
       if (!this.$store.getters.token) {
@@ -225,7 +226,10 @@ export default {
         }).catch(() => { })
         return
       }
-      console.log('正常请求')
+      const { data } = await addCart(this.goodsId, this.addCount, this.detail.skuList[0].goods_sku_id)
+      this.cartTotal = data.cartTotal
+      this.$toast('加入购物车成功')
+      this.showPannel = false
     }
   }
 }
