@@ -1,14 +1,10 @@
 <template>
   <div class="pay">
-    <van-nav-bar
-      fixed
-      title="订单结算台"
-      left-arrow
-      @click-left="$router.go(-1)"
-    />
+    <van-nav-bar fixed title="订单结算台" left-arrow @click-left="$router.go(-1)" />
 
     <!-- 地址相关 -->
     <div class="address">
+
       <div class="left-icon">
         <van-icon name="logistics" />
       </div>
@@ -23,7 +19,9 @@
         </div>
       </div>
 
-      <div class="info" v-else>请选择配送地址</div>
+      <div class="info" v-else>
+        请选择配送地址
+      </div>
 
       <div class="right-icon">
         <van-icon name="arrow" />
@@ -33,23 +31,19 @@
     <!-- 订单明细 -->
     <div class="pay-list" v-if="order.goodsList">
       <div class="list">
-        <div
-          class="goods-item"
-          v-for="item in order.goodsList"
-          :key="item.goods_id"
-        >
-          <div class="left">
-            <img :src="item.goods_image" alt="" />
-          </div>
-          <div class="right">
-            <p class="tit text-ellipsis-2">
-              {{ item.goods_name }}
-            </p>
-            <p class="info">
-              <span class="count">x{{ item.total_num }}</span>
-              <span class="price">¥{{ item.total_pay_price }}</span>
-            </p>
-          </div>
+        <div class="goods-item" v-for="item in order.goodsList" :key="item.goods_id">
+            <div class="left">
+              <img :src="item.goods_image" alt="" />
+            </div>
+            <div class="right">
+              <p class="tit text-ellipsis-2">
+                {{ item.goods_name }}
+              </p>
+              <p class="info">
+                <span class="count">x{{ item.total_num }}</span>
+                <span class="price">¥{{ item.total_pay_price }}</span>
+              </p>
+            </div>
         </div>
       </div>
 
@@ -80,10 +74,7 @@
       <div class="pay-way">
         <span class="tit">支付方式</span>
         <div class="pay-cell">
-          <span
-            ><van-icon name="balance-o" />余额支付（可用 ¥
-            {{ personal.balance }} 元）</span
-          >
+          <span><van-icon name="balance-o" />余额支付（可用 ¥ {{ personal.balance }} 元）</span>
           <!-- <span>请先选择配送地址</span> -->
           <span class="red"><van-icon name="passed" /></span>
         </div>
@@ -91,57 +82,56 @@
 
       <!-- 买家留言 -->
       <div class="buytips">
-        <textarea
-          placeholder="选填：买家留言（50字内）"
-          name=""
-          id=""
-          cols="30"
-          rows="10"
-        ></textarea>
+        <textarea v-model="remark" placeholder="选填：买家留言（50字内）" name="" id="" cols="30" rows="10"></textarea>
       </div>
     </div>
 
     <!-- 底部提交 -->
     <div class="footer-fixed">
-      <div class="left">
-        实付款：<span>￥{{ order.orderTotalPrice }}</span>
-      </div>
-      <div class="tipsbtn">提交订单</div>
+      <div class="left">实付款：<span>￥{{ order.orderTotalPrice }}</span></div>
+      <div class="tipsbtn" @click="submitOrder">提交订单</div>
     </div>
   </div>
 </template>
 
 <script>
 import { getAddressList } from '@/api/address'
-import { checkOrder } from '@/api/order'
+import { checkOrder, submitOrder } from '@/api/order'
+import loginConfirm from '@/mixins/loginConfirm'
 export default {
   name: 'PayIndex',
+  mixins: [loginConfirm],
   data () {
     return {
       addressList: [],
       order: {},
-      personal: {}
+      personal: {},
+      remark: '' // 备注留言
     }
   },
   computed: {
     selectedAddress () {
-      // 地址管理非主线业务,直接获取第一项作为选中的地址
+      // 这里地址管理非主线业务，直接获取第一个项作为选中的地址
       return this.addressList[0] || {}
     },
     longAddress () {
       const region = this.selectedAddress.region
-      return (
-        region.province +
-        region.city +
-        region.region +
-        this.selectedAddress.detail
-      )
+      return region.province + region.city + region.region + this.selectedAddress.detail
     },
     mode () {
       return this.$route.query.mode
     },
     cartIds () {
       return this.$route.query.cartIds
+    },
+    goodsId () {
+      return this.$route.query.goodsId
+    },
+    goodsSkuId () {
+      return this.$route.query.goodsSkuId
+    },
+    goodsNum () {
+      return this.$route.query.goodsNum
     }
   },
   created () {
@@ -149,21 +139,47 @@ export default {
     this.getOrderList()
   },
   methods: {
+    async submitOrder () {
+      if (this.mode === 'cart') {
+        await submitOrder(this.mode, {
+          cartIds: this.cartIds,
+          remark: this.remark
+        })
+      }
+      if (this.mode === 'buyNow') {
+        await submitOrder(this.mode, {
+          goodsId: this.goodsId,
+          goodsSkuId: this.goodsSkuId,
+          goodsNum: this.goodsNum,
+          remark: this.remark
+        })
+      }
+      this.$toast.success('支付成功')
+      this.$router.replace('/myorder')
+    },
     async getAddressList () {
-      const {
-        data: { list }
-      } = await getAddressList()
+      const { data: { list } } = await getAddressList()
       this.addressList = list
-      console.log(list)
     },
     async getOrderList () {
-      const {
-        data: { order, personal }
-      } = await checkOrder(this.mode, {
-        cartIds: this.cartIds
-      })
-      this.order = order
-      this.personal = personal
+      // 购物车结算
+      if (this.mode === 'cart') {
+        const { data: { order, personal } } = await checkOrder(this.mode, {
+          cartIds: this.cartIds
+        })
+        this.order = order
+        this.personal = personal
+      }
+      // 立刻购买结算
+      if (this.mode === 'buyNow') {
+        const { data: { order, personal } } = await checkOrder(this.mode, {
+          goodsId: this.goodsId,
+          goodsSkuId: this.goodsSkuId,
+          goodsNum: this.goodsNum
+        })
+        this.order = order
+        this.personal = personal
+      }
     }
   }
 }
@@ -304,12 +320,12 @@ export default {
     padding-left: 12px;
     color: #666;
     span {
-      color: #fa2209;
+      color:#fa2209;
     }
   }
   .tipsbtn {
     width: 121px;
-    background: linear-gradient(90deg, #f9211c, #ff6335);
+    background: linear-gradient(90deg,#f9211c,#ff6335);
     color: #fff;
     text-align: center;
     line-height: 46px;
